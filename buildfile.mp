@@ -10,6 +10,6 @@ _G.main = () ->
   handle = assert io.open "includes.lua", "w"
   for inc in *include do handle\write inc
   handle\close!
-  ex "./luacomp init.lua -Orefinement.lua"
+  io.write ex "./luacomp init.lua -Orefinement.lua"
   log "warn", "cleaning up"
   os.remove "includes.lua"
