@@ -5,5 +5,4 @@ local rf = {}
 --#include "src/logger.lua"
 --#include "src/services.lua"
 
-
 while true do io.write("RF> ") io.read() end
