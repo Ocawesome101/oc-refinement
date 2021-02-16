@@ -5,4 +5,4 @@ local rf = {}
 --#include "src/logger.lua"
 --#include "src/services.lua"
 
-while true do io.write("RF> ") print(io.read()) end
+while true do coroutine.yield() end
