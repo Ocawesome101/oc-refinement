@@ -1,39 +1,3 @@
--- Refinement init system --
-
-local rf = {}
-
--- versioning --
-
-do
-  rf._NAME = "Refinement"
-  rf._RELEASE = "0"
-  rf._RUNNING_ON = "ULOS 21.02-r0"
-  
-  io.write("\n  \27[97mWelcome to \27[93m", rf._RUNNING_ON, "\27[97m!\n\n")
-  local version = "2021.02.21"
-  rf._VERSION = string.format("%s r%s-%s", rf._NAME, rf._RELEASE, version)
-end
-
-
--- logger --
-
-do
-  rf.prefix = {
-    busy = "\27[97m[\27[94mbusy\27[97m] ",
-    info = "\27[97m[\27[94minfo\27[97m] ",
-    done = "\27[97m[\27[92mdone\27[97m] ",
-    fail = "\27[97m[\27[91mfail\27[97m] ",
-    warn = "\27[97m[\27[93mwarn\27[97m] "
-  }
-  function rf.log(...)
-    io.write(...)
-    io.write("\n")
-  end
-
-  rf.log(rf.prefix.info, "Starting \27[94m", rf._VERSION, "\27[97m")
-end
-
-
 -- require function
 
 rf.log(rf.prefix.busy, "src/require")
@@ -72,18 +36,3 @@ do
 end
 
 rf.log(rf.prefix.done, "src/require")
-
-
--- service management --
-
-rf.log(rf.prefix.busy, "src/services")
-
-do
-  local process = require("process")
-  local running = {}
-end
-
-rf.log(rf.prefix.done, "src/services")
-
-
-while true do coroutine.yield() end
