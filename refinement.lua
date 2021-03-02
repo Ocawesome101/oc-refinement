@@ -7,10 +7,10 @@ local rf = {}
 do
   rf._NAME = "Refinement"
   rf._RELEASE = "0"
-  rf._RUNNING_ON = "ULOS 21.02-r0"
+  rf._RUNNING_ON = "ULOS 21.03-r0"
   
   io.write("\n  \27[97mWelcome to \27[93m", rf._RUNNING_ON, "\27[97m!\n\n")
-  local version = "2021.02.21"
+  local version = "2021.03.02"
   rf._VERSION = string.format("%s r%s-%s", rf._NAME, rf._RELEASE, version)
 end
 
