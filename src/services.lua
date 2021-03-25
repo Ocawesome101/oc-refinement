@@ -1,73 +1,30 @@
--- service management --
+-- service management, again
 
 rf.log(rf.prefix.busy, "src/services")
 
 do
-  local svdir = "@[{os.getenv('SVDIR') or '/etc/rf/'}]"
-
+  local svdir = "@[{os.getenv('SVDIR' or '/etc/rf/')}]"
+  local sv = {up = nil}
   local running = {}
-  local sv = {up=true}
+  local process = require("process")
   
-  local starting = {}
-  sv.up = function(srv)
-    checkArg(1, srv, "string")
-    if starting[srv] then
-      error("circular dependency detected")
-    end
-    local senv = setmetatable({needs=sv.up}, {__index=_G, __pairs=_G})
-    local spath = string.format("%s/%s", svdir, srv)
-    local ok, err = loadfile(svpath, nil, senv)
-    if not ok then
-      return nil, err
-    end
-    starting[srv] = true
-    local st, rt = pcall(ok)
-    if not st and rt then return nil, rt end
-    if senv.start then pcall(senv.start) end
-    running[srv] = senv
-    return true
+  function sv.up(svc)
   end
   
-  function sv.down(srv)
-    checkArg(1, srv, "string")
-    if not running[srv] then
-      return true, "no such service"
-    end
-    if running[srv].stop then
-      pcall(running[srv].stop)
-    end
-    running[srv] = nil
+  function sv.down(svc)
   end
   
-  function sv.msg(srv, ...)
-    checkArg(1, srv, "string")
-    if running[srv] and running[srv].msg then
-      return pcall(running[srv].msg, ...)
-    end
-    return true
+  function sv.list()
   end
-
+  
+  function sv.msg()
+  end
+  
   rf.log(rf.prefix.info, "Starting services")
-
-  local config = {}
-  local fs = require("filesystem")
-  if fs.stat("/etc/rf.cfg") then
-    local section
-    for line in io.lines("/etc/rf.cfg") do
-      if line:match("%[.+%]") then
-        section = line:sub(2, -2)
-        config[section] = config[section] or {}
-      else
-        local k, v = line:match("^(.-) = (.+)$")
-        if v:match("^%[.+%]$") then
-          config[section][k] = {}
-          for item in v:gmatch("[^%[%]%s,]+") do
-            table.insert(config[section][k], tonumber(item) or item)
-          end
-        else
-          config[section][k] = v
-        end
-      end
+  local start = {}
+  for k, v in pairs(config) do
+    if v.autostart then
+      start[#start + 1] = k
     end
   end
 end
