@@ -1,6 +1,6 @@
 -- require function
 
-rf.log(rf.prefix.busy, "src/require")
+rf.log(rf.prefix.green, "src/require")
 
 do
   local loaded = package.loaded
@@ -34,5 +34,3 @@ do
     end
   end
 end
-
-rf.log(rf.prefix.done, "src/require")

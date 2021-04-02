@@ -1,6 +1,6 @@
 local config = {}
 do
-  rf.log(rf.prefix.info, "Loading service configuration")
+  rf.log(rf.prefix.blue, "Loading service configuration")
 
   -- string -> boolean, number, or string
   local function coerce(val)
@@ -24,13 +24,15 @@ do
         config[section] = config[section] or {}
       else
         local k, v = line:match("^(.-) = (.+)$")
-        if v:match("^%[.+%]$") then
-          config[section][k] = {}
-          for item in v:gmatch("[^%[%]%s,]+") do
-            table.insert(config[section][k], coerce(item))
+        if k and v then
+          if v:match("^%[.+%]$") then
+            config[section][k] = {}
+            for item in v:gmatch("[^%[%]%s,]+") do
+              table.insert(config[section][k], coerce(item))
+           end
+          else
+            config[section][k] = coerce(v)
           end
-        else
-          config[section][k] = coerce(v)
         end
       end
     end
