@@ -25,6 +25,7 @@ do
       else
         local k, v = line:match("^(.-) = (.+)$")
         if k and v then
+          v = v:gsub("\n", "")
           if v:match("^%[.+%]$") then
             config[section][k] = {}
             for item in v:gmatch("[^%[%]%s,]+") do

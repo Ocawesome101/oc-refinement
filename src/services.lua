@@ -4,7 +4,7 @@ rf.log(rf.prefix.green, "src/services")
 
 do
   local svdir = "@[{os.getenv('SVDIR' or '/etc/rf/')}]"
-  local sv = {up = nil}
+  local sv = {}
   local running = {}
   local process = require("process")
   
@@ -12,9 +12,28 @@ do
     if running[svc] then
       return true
     end
-    local path = config[svc] and config[svc].file or
+    if not config[svc] then
+      return nil, "no service configuration"
+    end
+    if config[svc].depends then
+      for i, v in ipairs(config[svc].depends) do
+        sv.up(v)
+      end
+    end
+    local path = config[svc].file or
       string.format("%s.lua", svc)
-
+    if path:sub(1,1) ~= "/" then
+      path = string.format("%s/%s", svdir, path)
+    end
+    local ok, err = loadfile(path, "bt", _G)
+    if not ok then
+      return nil, err
+    end
+    local pid = process.spawn {
+      name = svc,
+      func = ok,
+    }
+    running[svc] = pid
   end
   
   function sv.down(svc)
@@ -36,16 +55,34 @@ do
       __ipairs = running
     })
   end
-  
-  function sv.msg()
-  end
+
+  package.loaded.sv = package.protect(sv)
   
   rf.log(rf.prefix.blue, "Starting services")
   for k, v in pairs(config) do
     if v.autostart then
-      rf.log(rf.prefix.yellow, "service START: ", k)
-      sv.up(k)
-      rf.log(rf.prefix.yellow, "service UP: ", k)
+      if (not v.type) or v.type == "service" then
+        rf.log(rf.prefix.yellow, "service START: ", k)
+        local ok, err = sv.up(k)
+        if not ok then
+          rf.log(rf.prefix.red, "service FAIL: ", k, ": ", err)
+        else
+          rf.log(rf.prefix.yellow, "service UP: ", k)
+        end
+      elseif v.type == "script" then
+        rf.log(rf.prefix.yellow, "script START: ", k)
+        local file = v.file or k
+        if file:sub(1, 1) ~= "/" then
+          file = string.format("%s/%s", svdir, file)
+        end
+        local ok, err = pcall(dofile, file)
+        if not ok and err then
+          rf.log(rf.prefix.red, "script FAIL: ", k, ": ", err)
+        else
+          rf.log(rf.prefix.yellow, "script FINISH: ", k)
+        end
+      end
     end
   end
+  rf.log(rf.prefix.blue, "Started services")
 end
