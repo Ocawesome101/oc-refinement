@@ -3,7 +3,7 @@
 rf.log(rf.prefix.green, "src/services")
 
 do
-  local svdir = "@[{os.getenv('SVDIR' or '/etc/rf/')}]"
+  local svdir = "@[{os.getenv('SVDIR') or '/etc/rf/'}]"
   local sv = {}
   local running = {}
   local process = require("process")
@@ -13,7 +13,7 @@ do
       return true
     end
     if not config[svc] then
-      return nil, "no service configuration"
+      return nil, "service not registered"
     end
     if config[svc].depends then
       for i, v in ipairs(config[svc].depends) do
@@ -37,6 +37,7 @@ do
       func = ok,
     }
     running[svc] = pid
+    return true
   end
   
   function sv.down(svc)
@@ -82,7 +83,7 @@ do
         if not ok and err then
           rf.log(rf.prefix.red, "script FAIL: ", k, ": ", err)
         else
-          rf.log(rf.prefix.yellow, "script FINISH: ", k)
+          rf.log(rf.prefix.yellow, "script DONE: ", k)
         end
       end
     end
