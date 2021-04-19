@@ -6,3 +6,5 @@ local rf = {}
 --#include "src/require.lua"
 --#include "src/config.lua"
 --#include "src/services.lua"
+
+while true do coroutine.yield() end
