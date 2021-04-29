@@ -8,4 +8,6 @@ local rf = {}
 --#include "src/services.lua"
 --#include "src/shutdown.lua"
 
-while true do coroutine.yield() end
+while true do
+  coroutine.yield()
+end
