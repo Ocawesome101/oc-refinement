@@ -1,4 +1,5 @@
--- Refinement init system --
+-- Refinement init system. --
+-- Copyright (c) 2021 i develop things under the DSLv1.
 
 local rf = {}
 --#include "src/version.lua"
