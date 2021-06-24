@@ -13,7 +13,7 @@ _G.main = function()
     handle:write(inc)
   end
   handle:close()
-  io.write(ex("../utils/proc.lua init.lua refinement.lua"))
+  ex("../utils/proc.lua init.lua refinement.lua")
   log("warn", "cleaning up")
   os.remove("includes.lua")
 end
