@@ -67,7 +67,8 @@ do
     return setmetatable({}, {
       __index = running,
       __pairs = running,
-      __ipairs = running
+      __ipairs = running,
+      __metatable = {}
     })
   end
 
