@@ -20,6 +20,18 @@ do
       process.kill(proc)
     end
 
+    if package.loaded.network then
+      local net = require("network")
+      if net.hostname() ~= "localhost" then
+        rf.log(rf.prefix.red, "INIT: saving hostname")
+        local handle, err = io.open("/etc/hostname", "w")
+        if handle then
+          handle:write(net.hostname())
+          handle:close()
+        end
+      end
+    end
+
     rf.log(rf.prefix.red, "INIT: Requesting system shutdown")
     shutdown(rbt)
   end
