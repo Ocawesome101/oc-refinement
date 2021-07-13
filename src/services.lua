@@ -64,12 +64,9 @@ do
   end
   
   function sv.list()
-    return setmetatable({}, {
-      __index = running,
-      __pairs = running,
-      __ipairs = running,
-      __metatable = {}
-    })
+    local r = {}
+    for k,v in pairs(running) do r[k] = v end
+    return r
   end
 
   package.loaded.sv = package.protect(sv)
