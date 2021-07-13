@@ -2,6 +2,8 @@ local config = {}
 do
   rf.log(rf.prefix.blue, "Loading service configuration")
 
+  local capi = require("config").bracket
+
   -- string -> boolean, number, or string
   local function coerce(val)
     if val == "true" then
@@ -17,25 +19,6 @@ do
 
   local fs = require("filesystem")
   if fs.stat("/etc/rf.cfg") then
-    local section
-    for line in io.lines("/etc/rf.cfg") do
-      if line:match("%[.+%]") then
-        section = line:sub(2, -2)
-        config[section] = config[section] or {}
-      else
-        local k, v = line:match("^(.-) = (.+)$")
-        if k and v then
-          v = v:gsub("\n", "")
-          if v:match("^%[.+%]$") then
-            config[section][k] = {}
-            for item in v:gmatch("[^%[%]%s,]+") do
-              table.insert(config[section][k], coerce(item))
-           end
-          else
-            config[section][k] = coerce(v)
-          end
-        end
-      end
-    end
+    config = capi:load("/etc/rf.cfg")
   end
 end
