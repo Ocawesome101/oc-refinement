@@ -10,43 +10,72 @@ do
   local process = require("process")
   
   function sv.up(svc)
-    if running[svc] then
-      return true
+    local v = config[svc]
+    if not v then
+      return nil, "no such service"
     end
+    if (not v.type) or v.type == "service" then
+      rf.log(rf.prefix.yellow, "service START: ", svc)
+      
+      if running[svc] then
+        return true
+      end
 
-    if not config[svc] then
-      return nil, "service not registered"
-    end
+      if not config[svc] then
+        return nil, "service not registered"
+      end
     
-    if config[svc].depends then
-      for i, v in ipairs(config[svc].depends) do
-        local ok, err = sv.up(v)
-    
-        if not ok then
-          return nil, "failed starting dependency " .. v .. ": " .. err
+      if config[svc].depends then
+        for i, v in ipairs(config[svc].depends) do
+          local ok, err = sv.up(v)
+      
+          if not ok then
+            return nil, "failed starting dependency " .. v .. ": " .. err
+          end
         end
       end
-    end
 
-    local path = config[svc].file or
-      string.format("%s.lua", svc)
+      local path = config[svc].file or
+        string.format("%s.lua", svc)
     
-    if path:sub(1,1) ~= "/" then
-      path = string.format("%s/%s", svdir, path)
+      if path:sub(1,1) ~= "/" then
+        path = string.format("%s/%s", svdir, path)
+      end
+    
+      local ok, err = loadfile(path, "bt", _G)
+      if ok then
+        local pid = process.spawn {
+          name = svc,
+          func = ok,
+        }
+    
+        running[svc] = pid
+      end
+  
+      if not ok then
+        rf.log(rf.prefix.red, "service FAIL: ", svc, ": ", err)
+        return nil, err
+      else
+        rf.log(rf.prefix.yellow, "service UP: ", svc)
+        return true
+      end
+    elseif v.type == "script" then
+      rf.log(rf.prefix.yellow, "script START: ", svc)
+      local file = v.file or svc
+      
+      if file:sub(1, 1) ~= "/" then
+        file = string.format("%s/%s", svdir, file)
+      end
+      
+      local ok, err = pcall(dofile, file)
+      if not ok and err then
+        rf.log(rf.prefix.red, "script FAIL: ", svc, ": ", err)
+        return nil, err
+      else
+        rf.log(rf.prefix.yellow, "script DONE: ", svc)
+        return true
+      end
     end
-    
-    local ok, err = loadfile(path, "bt", _G)
-    if not ok then
-      return nil, err
-    end
-    
-    local pid = process.spawn {
-      name = svc,
-      func = ok,
-    }
-    
-    running[svc] = pid
-    return true
   end
   
   function sv.down(svc)
@@ -54,7 +83,7 @@ do
       return true
     end
     
-    local ok, err = process.kill(running[svc])
+    local ok, err = process.kill(running[svc], process.signals.interrupt)
     if not ok then
       return nil, err
     end
@@ -69,35 +98,64 @@ do
     return r
   end
 
+  function sv.add(stype, name, file, ...)
+    if config[name] then
+      return nil, "service already exists"
+    end
+
+    local nent = {
+      __load_order = {"autostart", "type", "file", "depends"},
+      depends = table.pack(...),
+      autostart = false,
+      type = stype,
+      file = file
+    }
+    table.insert(config.__load_order, name)
+    config[name] = nent
+    require("config").bracket:save("/etc/rf.cfg", config)
+    return true
+  end
+
+  function sv.del(name)
+    checkArg(1, name, "string")
+    if not config[name] then
+      return nil, "no such service"
+    end
+    config[name] = nil
+    for k, v in pairs(config.__load_order) do
+      if v == name then
+        table.remove(config.__load_order, k)
+        break
+      end
+    end
+    require("config").bracket:save("/etc/rf.cfg", config)
+    return true
+  end
+  
+  function sv.enable(name)
+    if not config[name] then
+      return nil, "no such service"
+    end
+    config[name].autostart = true
+    require("config").bracket:save("/etc/rf.cfg", config)
+    return true
+  end
+
+  function sv.disable(name)
+    if not config[name] then
+      return nil, "no such service"
+    end
+    config[name].autostart = false
+    require("config").bracket:save("/etc/rf.cfg", config)
+    return true
+  end
+
   package.loaded.sv = package.protect(sv)
   
   rf.log(rf.prefix.blue, "Starting services")
   for k, v in pairs(config) do
     if v.autostart then
-      if (not v.type) or v.type == "service" then
-        rf.log(rf.prefix.yellow, "service START: ", k)
-        local ok, err = sv.up(k)
-    
-        if not ok then
-          rf.log(rf.prefix.red, "service FAIL: ", k, ": ", err)
-        else
-          rf.log(rf.prefix.yellow, "service UP: ", k)
-        end
-      elseif v.type == "script" then
-        rf.log(rf.prefix.yellow, "script START: ", k)
-        local file = v.file or k
-        
-        if file:sub(1, 1) ~= "/" then
-          file = string.format("%s/%s", svdir, file)
-        end
-        
-        local ok, err = pcall(dofile, file)
-        if not ok and err then
-          rf.log(rf.prefix.red, "script FAIL: ", k, ": ", err)
-        else
-          rf.log(rf.prefix.yellow, "script DONE: ", k)
-        end
-      end
+      sv.up(k)
     end
   end
 
