@@ -94,7 +94,11 @@ do
   
   function sv.list()
     local r = {}
-    for k,v in pairs(running) do r[k] = v end
+    for k,v in pairs(config) do
+      if k ~= "__load_order" then
+        r[k] = not not running[k]
+      end
+    end
     return r
   end
 
