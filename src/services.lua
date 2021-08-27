@@ -96,7 +96,8 @@ do
     local r = {}
     for k,v in pairs(config) do
       if k ~= "__load_order" then
-        r[k] = not not running[k]
+        r[k] = {isRunning = not not running[k], isEnabled = not not v.autostart,
+          type = config[k].type}
       end
     end
     return r
