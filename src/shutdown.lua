@@ -17,7 +17,7 @@ do
     
     for svc, proc in pairs(rf.running) do
       rf.log(rf.prefix.yellow, "INIT: Stopping service: ", svc)
-      process.kill(proc)
+      process.kill(proc, process.signals.quit)
     end
 
     if package.loaded.network then
