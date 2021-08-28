@@ -2,6 +2,7 @@ local config = {}
 do
   rf.log(rf.prefix.blue, "Loading service configuration")
 
+  local fs = require("filesystem")
   local capi = require("config").bracket
 
   -- string -> boolean, number, or string
