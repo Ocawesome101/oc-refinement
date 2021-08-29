@@ -10,7 +10,10 @@ local rf = {}
 --#include "src/shutdown.lua"
 
 while true do
+  if rf._shutdown then
+    rf.shutdown(rf._shutdown_mode)
+  end
   --local s = table.pack(
-  coroutine.yield()
+  coroutine.yield(2)
   --) if s[1] == "process_died" then print(table.unpack(s)) end
 end

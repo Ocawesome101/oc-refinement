@@ -8,16 +8,12 @@ do
 
   local shutdown = computer.shutdown
 
-  function computer.shutdown(rbt)
-    if process.info().owner ~= 0 then
-      return nil, "permission denied"
-    end
-
+  function rf.shutdown(rbt)
     rf.log(rf.prefix.red, "INIT: Stopping services")
     
     for svc, proc in pairs(rf.running) do
       rf.log(rf.prefix.yellow, "INIT: Stopping service: ", svc)
-      process.kill(proc, process.signals.quit)
+      process.kill(proc, process.signals.kill)
     end
 
     if package.loaded.network then
@@ -34,5 +30,11 @@ do
 
     rf.log(rf.prefix.red, "INIT: Requesting system shutdown")
     shutdown(rbt)
+  end
+
+  function computer.shutdown(rbt)
+    if process.info().owner ~= 0 then return nil, "permission denied" end
+    rf._shutdown = true
+    rf._shutdown_mode = not not rbt
   end
 end
