@@ -2,7 +2,7 @@
 
 do
   rf._NAME = "Refinement"
-  rf._RELEASE = "1.53"
+  rf._RELEASE = "1.54"
   rf._RUNNING_ON = "@[{os.getenv('OS')}]"
   
   io.write("\n  \27[97mWelcome to \27[93m", rf._RUNNING_ON, "\27[97m!\n\n")
