@@ -10,5 +10,5 @@ for mod in $imods; do
   echo "--#include \"$mod.lua\"" >> includes.lua
 done
 
-$PREPROCESSOR init.lua refinement.lua
+$PREPROCESSOR init.lua refinement.lua -strip-comments
 rm -f includes.lua
